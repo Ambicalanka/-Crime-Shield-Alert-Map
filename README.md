@@ -113,18 +113,7 @@ Navigate to: `http://localhost:5000`
 
 ---
 
-## 🔐 Admin Setup
-
-To create an admin account, run:
-```bash
-python add_admin_user.py
-```
-
-Then set your own secure username and password.
-
----
-
-## 🛠️ Technology Stack
+## ️ Technology Stack
 
 | Technology | Purpose |
 |-----------|---------|
