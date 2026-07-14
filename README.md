@@ -113,13 +113,14 @@ Navigate to: `http://localhost:5000`
 
 ---
 
-## 🔐 Admin Credentials
+## 🔐 Admin Setup
 
-Default admin login (if enabled):
-- **Username:** admin
-- **Password:** admin123
+To create an admin account, run:
+```bash
+python add_admin_user.py
+```
 
-⚠️ **Important:** Change these credentials in production!
+Then set your own secure username and password.
 
 ---
 
