@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Zone Checker</title>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
+</head>
+<body>
+<h2>Live Zone Checker</h2>
+<div id="map" style="width: 100%; height: 500px;"></div>
+<div id="zoneStatus"></div>
+
+<script>
+let map, marker, watchID;
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: {lat: 20.5937, lng: 78.9629}, // India center
+    zoom: 5
+  });
+
+  if (navigator.geolocation) {
+    watchID = navigator.geolocation.watchPosition(position => {
+      const pos = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+      if (!marker) {
+        marker = new google.maps.Marker({position: pos, map: map});
+      } else {
+        marker.setPosition(pos);
+      }
+      map.setCenter(pos);
+      map.setZoom(10);
+
+      fetch(`/check_zone_by_coords?lat=${pos.lat}&lng=${pos.lng}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'ok') {
+            if (data.zone) {
+              document.getElementById('zoneStatus').innerText = 
+                `You are in ${data.zone.name} (${data.zone.severity}) zone.`;
+            } else {
+              document.getElementById('zoneStatus').innerText = 'You are in an unmonitored zone.';
+            }
+          } else {
+            document.getElementById('zoneStatus').innerText = data.message;
+          }
+        });
+    }, () => {
+      document.getElementById('zoneStatus').innerText = 'Geolocation failed.';
+    });
+  } else {
+    document.getElementById('zoneStatus').innerText = 'Geolocation not supported.';
+  }
+}
+
+window.onload = initMap;
+</script>
+</body>
+</html>

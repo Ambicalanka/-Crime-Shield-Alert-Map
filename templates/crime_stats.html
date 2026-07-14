@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crime Statistics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('report_crime') }}">Report Crime</a> |
+        <a href="{{ url_for('route_safety') }}">Route Safety</a> |
+        <a href="{{ url_for('alert') }}">Live Zone Checker</a> |
+        <a href="{{ url_for('prediction_charts') }}">Crime Predictions</a> |
+        <a href="{{ url_for('map_view') }}">Zone Map</a>
+    </nav>
+    <hr>
+    <h2>Crime Statistics (2021–2024)</h2>
+    <canvas id="crimeChart"></canvas>
+
+    <script>
+    fetch('/get_crime_stats')
+    .then(response => response.json())
+    .then(stats => {
+        const labels = [...new Set(stats.map(s => s.year))];
+        const crimeTypes = [...new Set(stats.map(s => s.crime_type))];
+        
+        const datasets = crimeTypes.map(type => ({
+            label: type,
+            data: labels.map(year => {
+                const entry = stats.find(s => s.year == year && s.crime_type === type);
+                return entry ? entry.count : 0;
+            }),
+            borderColor: `#${Math.floor(Math.random()*16777215).toString(16)}`,
+            fill: false
+        }));
+
+        new Chart(document.getElementById('crimeChart'), {
+            type: 'line',
+            data: { labels, datasets },
+            options: { responsive: true, title: { display: true, text: 'Crime Trends (2021–2024)' } }
+        });
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crime Predictions (2025–2027)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('report_crime') }}">Report Crime</a> |
+        <a href="{{ url_for('route_safety') }}">Route Safety</a> |
+        <a href="{{ url_for('alert') }}">Live Zone Checker</a> |
+        <a href="{{ url_for('prediction_charts') }}">Crime Predictions</a> |
+        <a href="{{ url_for('map_view') }}">Zone Map</a>
+    </nav>
+    <hr>
+    <h2>Future Crime Predictions (2025–2027)</h2>
+    <canvas id="forecastChart"></canvas>
+    <script>
+        fetch('/predict_future_crimes')
+        .then(response => response.json())
+        .then(predictions => {
+            const labels = [...new Set(predictions.map(p => p.year))];
+            const crimeTypes = [...new Set(predictions.map(p => p.crime_type))];
+            const datasets = crimeTypes.map(type => ({
+                label: type,
+                data: labels.map(year => {
+                    const entry = predictions.find(p => p.year == year && p.crime_type === type);
+                    return entry ? entry.count : 0;
+                }),
+                borderColor: `#${Math.floor(Math.random()*16777215).toString(16)}`,
+                borderDash: [5,5],
+                fill: false
+            }));
+            new Chart(document.getElementById('forecastChart'), {
+                type: 'line',
+                data: { labels, datasets },
+                options: { responsive: true, title: { display: true, text: 'Future Crime Forecast (2025–2027)' } }
+            });
+        });
+    </script>
+</body>
+</html>

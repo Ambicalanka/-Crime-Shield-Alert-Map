@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>India Crime Data Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+    h2 { text-align: center; }
+    .dashboard-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-top: 30px; }
+    canvas { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .full-width { grid-column: span 2; }
+  </style>
+</head>
+<body>
+  <h2>📊 India Crime Statistics Dashboard (2019 - 2027)</h2>
+
+  <div class="dashboard-container">
+    <canvas id="crimeTrends" class="full-width"></canvas>
+    <canvas id="crimeTypeDistribution"></canvas>
+    <canvas id="stateWiseCrime"></canvas>
+    <canvas id="predictionChart" class="full-width"></canvas>
+  </div>
+
+  <script>
+    async function loadCrimeData() {
+      const res = await fetch("/dashboard-data");
+      const data = await res.json();
+
+      const years = data.trends.years;
+      const totals = data.trends.totals;
+      const types = data.types.labels;
+      const typeCounts = data.types.counts;
+      const states = data.state.labels;
+      const stateCounts = data.state.counts;
+      const predictionYears = data.prediction.years;
+      const predictionCounts = data.prediction.values;
+
+      new Chart(document.getElementById("crimeTrends"), {
+        type: "line",
+        data: {
+          labels: years,
+          datasets: [{
+            label: "Total Crimes Per Year",
+            data: totals,
+            fill: false,
+            borderColor: "#e74c3c",
+            tension: 0.4
+          }]
+        }
+      });
+
+      new Chart(document.getElementById("crimeTypeDistribution"), {
+        type: "doughnut",
+        data: {
+          labels: types,
+          datasets: [{
+            data: typeCounts,
+            backgroundColor: ["#3498db", "#f1c40f", "#2ecc71", "#9b59b6", "#e67e22"]
+          }]
+        }
+      });
+
+      new Chart(document.getElementById("stateWiseCrime"), {
+        type: "bar",
+        data: {
+          labels: states,
+          datasets: [{
+            label: "Crimes by State",
+            data: stateCounts,
+            backgroundColor: "#34495e"
+          }]
+        }
+      });
+
+      new Chart(document.getElementById("predictionChart"), {
+        type: "line",
+        data: {
+          labels: predictionYears,
+          datasets: [{
+            label: "Predicted Crimes",
+            data: predictionCounts,
+            borderColor: "#27ae60",
+            fill: false,
+            tension: 0.3
+          }]
+        }
+      });
+    }
+
+    loadCrimeData();
+  </script>
+</body>
+</html>

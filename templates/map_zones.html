@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crime Zone Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 600px; width: 100%; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('report_crime') }}">Report Crime</a> |
+        <a href="{{ url_for('route_safety') }}">Route Safety</a> |
+        <a href="{{ url_for('alert') }}">Live Zone Checker</a> |
+        <a href="{{ url_for('prediction_charts') }}">Crime Predictions</a> |
+        <a href="{{ url_for('map_view') }}">Zone Map</a>
+    </nav>
+    <hr>
+    <h2>India Crime Zones Map</h2>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize map
+        var map = L.map('map').setView([22.9734, 78.6569], 5); // Centered on India
+
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Fetch zones from Flask API
+        fetch('/get_zones')
+            .then(response => response.json())
+            .then(zones => {
+                zones.forEach(zone => {
+                    var color = zone.severity === "red" ? "red" : zone.severity === "yellow" ? "orange" : "green";
+                    L.circle([zone.lat, zone.lon], {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.5,
+                        radius: 5000 // Adjust for zoom level
+                    }).addTo(map).bindPopup(
+                        `<b>${zone.location}</b><br>Severity: ${zone.severity.toUpperCase()}<br>Recent Crimes: ${zone.crimes}`
+                    );
+                });
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>India Crime Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+    }
+    .chart-container {
+      width: 90%;
+      margin: 30px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    canvas {
+      margin: 20px auto;
+      display: block;
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h2>India Crime Analysis Dashboard (2019–2027)</h2>
+
+  <div class="chart-container">
+    <canvas id="crimeByYear"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="crimeByType"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="topStates"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="genderDistribution"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="ageGroups"></canvas>
+  </div>
+
+  <script>
+    async function loadDashboardData() {
+      const response = await fetch('/dashboard-data');
+      const data = await response.json();
+
+      new Chart(document.getElementById('crimeByYear'), {
+        type: 'line',
+        data: {
+          labels: Object.keys(data.total_crimes_by_year),
+          datasets: [{
+            label: 'Total Crimes Per Year',
+            data: Object.values(data.total_crimes_by_year),
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0,123,255,0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        }
+      });
+
+      new Chart(document.getElementById('crimeByType'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(data.crime_by_type),
+          datasets: [{
+            label: 'Crimes by Type',
+            data: Object.values(data.crime_by_type),
+            backgroundColor: '#28a745'
+          }]
+        }
+      });
+
+      new Chart(document.getElementById('topStates'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(data.top_states),
+          datasets: [{
+            label: 'Top 5 States by Crimes',
+            data: Object.values(data.top_states),
+            backgroundColor: '#ffc107'
+          }]
+        }
+      });
+
+      new Chart(document.getElementById('genderDistribution'), {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(data.gender_distribution),
+          datasets: [{
+            label: 'Gender Distribution',
+            data: Object.values(data.gender_distribution),
+            backgroundColor: ['#007bff', '#dc3545', '#6f42c1']
+          }]
+        }
+      });
+
+      new Chart(document.getElementById('ageGroups'), {
+        type: 'pie',
+        data: {
+          labels: Object.keys(data.age_groups),
+          datasets: [{
+            label: 'Age Groups of Victims',
+            data: Object.values(data.age_groups),
+            backgroundColor: ['#17a2b8', '#6610f2', '#fd7e14', '#20c997']
+          }]
+        }
+      });
+    }
+
+    loadDashboardData();
+  </script>
+</body>
+</html>

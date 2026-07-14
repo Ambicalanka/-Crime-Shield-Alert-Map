@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Zone Checker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+            border: 2px solid #444;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        nav a {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('report_crime') }}">Report Crime</a> |
+        <a href="{{ url_for('route_safety') }}">Route Safety</a> |
+        <a href="{{ url_for('alert') }}">Live Zone Checker</a> |
+        <a href="{{ url_for('prediction_charts') }}">Crime Predictions</a> |
+        <a href="{{ url_for('map_view') }}">Zone Map</a>
+    </nav>
+
+    <hr>
+    <h2>Check Zone Status</h2>
+    <button onclick="getLocation()">Check My Location</button><br><br>
+    <form id="manualForm">
+        Latitude: <input type="text" id="lat" required>
+        Longitude: <input type="text" id="lon" required>
+        <button type="submit">Check</button>
+    </form>
+    <div id="result" style="margin-top:10px;"></div>
+
+    <h3>Live Map with Zone Alerts</h3>
+    <p>Map shows your live location and colored zone boundaries</p>
+    <div id="map"></div>
+
+    <script>
+        function getZoneColor(severity) {
+            if (severity === "High") return "red";
+            if (severity === "Medium") return "yellow";
+            return "green";
+        }
+
+        function checkZone(lat, lon) {
+            fetch(`/check_zone_status?lat=${lat}&lon=${lon}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('result').innerText =
+                        `Zone: ${data.zone}, Status: ${data.status}`;
+                });
+        }
+
+        function loadMap(lat, lon) {
+            const map = L.map('map').setView([lat, lon], 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            const userMarker = L.marker([lat, lon]).addTo(map)
+                .bindPopup("You are here").openPopup();
+
+            fetch('/api/zones')
+                .then(res => res.json())
+                .then(zones => {
+                    zones.forEach(zone => {
+                        const color = getZoneColor(zone.severity);
+                        L.rectangle([
+                            [zone.min_lat, zone.min_lng],
+                            [zone.max_lat, zone.max_lng]
+                        ], {
+                            color: color,
+                            fillColor: color,
+                            fillOpacity: 0.3,
+                            weight: 1
+                        }).addTo(map);
+                    });
+                });
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    document.getElementById("lat").value = lat;
+                    document.getElementById("lon").value = lon;
+                    checkZone(lat, lon);
+                    loadMap(lat, lon);
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        document.getElementById("manualForm").onsubmit = function(e) {
+            e.preventDefault();
+            const lat = parseFloat(document.getElementById("lat").value);
+            const lon = parseFloat(document.getElementById("lon").value);
+            checkZone(lat, lon);
+            loadMap(lat, lon);
+        };
+    </script>
+</body>
+</html>

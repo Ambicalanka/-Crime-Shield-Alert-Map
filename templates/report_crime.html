@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Crime</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-image: url('/static/images/crime_report_bg.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            color: #2c2c2c;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.85); /* Light background to contrast image */
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 40px auto;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #CC313D;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 100px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #CC313D;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #a0242e;
+        }
+
+        nav {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        nav a {
+            color: #CC313D;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        a {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            color: #CC313D;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('report_crime') }}">Report Crime</a> |
+    </nav>
+    <hr>
+    <div class="container">
+        <h1>Report a Crime</h1>
+        <form action="{{ url_for('report_crime') }}" method="POST">
+
+            <label for="crime_type">Type of Crime:</label>
+            <input type="text" id="crime_type" name="crime_type" required>
+
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" required>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" required></textarea>
+
+            <label for="date_reported">Date of Incident:</label>
+            <input type="date" id="date_reported" name="date_reported" required>
+
+            <button type="submit">Submit</button>
+        </form>
+        <a href="/">Back to Home</a>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

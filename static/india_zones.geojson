@@ -1,0 +1,65 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "zone": "Zone A",
+        "city": "City X",
+        "crime_rate": "High"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [78.123, 28.456],
+            [78.124, 28.456],
+            [78.124, 28.457],
+            [78.123, 28.457],
+            [78.123, 28.456]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone": "Zone B",
+        "city": "City Y",
+        "crime_rate": "Medium"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [78.125, 28.458],
+            [78.126, 28.458],
+            [78.126, 28.459],
+            [78.125, 28.459],
+            [78.125, 28.458]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone": "Zone C",
+        "city": "City Z",
+        "crime_rate": "Low"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [78.127, 28.460],
+            [78.128, 28.460],
+            [78.128, 28.461],
+            [78.127, 28.461],
+            [78.127, 28.460]
+          ]
+        ]
+      }
+    }
+  ]
+}

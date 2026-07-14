@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crime Shield Alert Map</title>
+
+  <!-- Boxicons & Google Fonts -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: rgba(255,255,255,0.1);
+      --txt: #fff;
+      --hover: #00ffc8;
+      --card-bg: rgba(0,0,0,0.5);
+    }
+    [data-theme="dark"] {
+      --bg: rgba(20,20,30,0.7);
+      --txt: #eee;
+      --hover: #00f7ff;
+      --card-bg: rgba(255,255,255,0.05);
+    }
+    * {
+      margin: 0; padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      min-height: 100vh;
+      background: url('https://img.freepik.com/free-photo/crime-scene-tape-blurred-background_53876-101663.jpg?t=st=1719914800~exp=1719918400~hmac=4011eb5d5d453f1d166e2a3b9f4c942c91c8147c78cbd46b2aa0151ff9fbc8e6&w=1380') no-repeat center/cover;
+      color: var(--txt);
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      position: sticky;
+      top: 0; left: 0;
+      width: 100%;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid rgba(255,255,255,0.2);
+      z-index: 100;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--txt);
+    }
+    .navbar {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .navbar a {
+      color: var(--txt);
+      text-decoration: none;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+    .navbar a:hover { color: var(--hover); }
+    #menu-icon {
+      display: none;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+    .toggle-theme {
+      font-size: 1.6rem;
+      cursor: pointer;
+    }
+    @media (max-width: 768px) {
+      #menu-icon { display: block; }
+      .navbar {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: var(--bg);
+        backdrop-filter: blur(10px);
+        flex-direction: column;
+        align-items: center;
+        display: none;
+        padding: 10px 0;
+      }
+      .navbar.active { display: flex; }
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 20px;
+    }
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(15px);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      animation: fadeInUp 1s ease-in-out;
+    }
+    .card h1 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+    }
+    .card p {
+      margin: 5px 0;
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    /* Optional entrance animation */
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <!-- Header -->
+  <header class="header">
+    <a href="{{ url_for('index') }}" class="logo">🚨 CrimeAlert</a>
+    <i id="menu-icon" class="bx bx-menu"></i>
+    <nav class="navbar">
+      <a href="{{ url_for('route_safety') }}">Route Safety</a>
+      <a href="{{ url_for('live_zone_alert') }}">Live Zone Checker</a>
+      <a href="{{ url_for('report_crime') }}">Report Crime</a>
+      <a href="/dashboard-image" target="_blank">Dashboard 📊</a>
+    </nav>
+    <i id="themeToggle" class='toggle-theme bx bx-moon'></i>
+  </header>
+
+ <!-- Main Section -->
+  <section class="main">
+    <div class="card" data-aos="zoom-in">
+      <h1>Welcome to Crime Shield Alert Map </h1>
+      <p><strong>Your location:</strong> (17.7298953, 83.2880387)</p>
+      <p><strong>State:</strong> Andhra Pradesh</p>
+    </div>
+  </section>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    AOS.init({ duration: 1000 });
+
+    const menuIcon = document.getElementById('menu-icon');
+    const navbar = document.querySelector('.navbar');
+    menuIcon.addEventListener('click', () => navbar.classList.toggle('active'));
+
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    themeToggle.addEventListener('click', () => {
+      const isLight = body.getAttribute('data-theme') === 'light';
+      body.setAttribute('data-theme', isLight ? 'dark' : 'light');
+      themeToggle.className = 'toggle-theme bx ' + (isLight ? 'bx-sun' : 'bx-moon');
+    });
+  </script>
+</body>
+</html>

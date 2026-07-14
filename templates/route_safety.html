@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Route Safety Checker</title>
+    <style>
+        body {
+            background-color:  py#dfbde5;
+            font-family: Arial, sans-serif;
+        }
+
+        h2, label {
+            color: 	#000000;
+        }
+
+        select, button {
+            padding: 5px;
+            margin-top: 5px;
+        }
+
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>Route Safety Checker</h2>
+    <form method="POST">
+        <label for="source">Source Zone:</label>
+        <select name="source" id="source" required>
+            <option value="">Select Source Zone</option>
+            {% for zone in zones_source %}
+                <option value="{{ zone }}" {% if source == zone %}selected{% endif %}>{{ zone }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label for="destination">Destination Zone:</label>
+        <select name="destination" id="destination" required>
+            <option value="">Select Destination Zone</option>
+            {% for zone in zones_destination %}
+                <option value="{{ zone }}" {% if destination == zone %}selected{% endif %}>{{ zone }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <button type="submit">Check Route</button>
+    </form>
+
+    {% if request.method == 'POST' %}
+        {% if suggestion %}
+            <script>
+                alert("{{ suggestion }}");
+            </script>
+            <h3>
+    {% if suggestion == 'Safe' %}
+        <span style="color: green;">&#9679; {{ suggestion }}</span>
+    {% elif suggestion == 'Danger' %}
+        <span style="color: red;">&#9679; {{ suggestion }}</span>
+    {% elif suggestion.startswith('Not Safe') %}
+        <span style="color: orange;">&#9679; {{ suggestion }}</span>
+    {% else %}
+        <span style="color: gray;">&#9679; {{ suggestion }}</span>
+    {% endif %}
+</h3>
+
+            {% if crimes and crimes|length > 0 %}
+                <h4>Crimes reported in {{ destination }}:</h4>
+                <ul>
+                    {% for crime in crimes %}
+                        <li><b>{{ crime['crime_type'] }}</b>: {{ crime['description'] }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                {% if suggestion == 'Safe' %}
+                    <p style="color:green;"><b>No crime data, but zone is Safe.</b></p>
+                {% else %}
+                    <p>No crime data available for this destination.</p>
+                {% endif %}
+            {% endif %}
+
+            {% if most_common_crime %}
+                <div><b>Most frequent crime in {{ destination }}: {{ most_common_crime }}</b></div>
+            {% endif %}
+
+            {% if reason %}
+                <p><b>Reason:</b> {{ reason }}</p>
+            {% endif %}
+
+            {% if suggestion == 'Not Safe' and crime_counts %}
+                <h4>Crime Chart in {{ destination }}</h4>
+                <canvas id="crimeChart" width="400" height="250"></canvas>
+
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                    const crimeData = crime_counts | tojson ;
+                    const labels = Object.keys(crimeData);
+                    const data = Object.values(crimeData);
+
+                 new Chart(document.getElementById("crimeChart"), {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Number of Crimes',
+                                data: data,
+                                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+                </script>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+</body>
+</html>
+    

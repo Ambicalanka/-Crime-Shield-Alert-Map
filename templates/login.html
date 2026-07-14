@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login</title>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('report_crime') }}">Report Crime</a> |
+        <a href="{{ url_for('route_safety') }}">Route Safety</a> |
+        <a href="{{ url_for('alert') }}">Live Zone Checker</a> |
+        <a href="{{ url_for('prediction_charts') }}">Crime Predictions</a> |
+        <a href="{{ url_for('map_view') }}">Zone Map</a>
+    </nav>
+    <hr>
+    <h1>Admin Login</h1>
+    <form method="POST">
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" required>
+        <label for="phone">Phone:</label>
+        <input type="text" name="phone" id="phone" required>
+        <label for="password">Password:</label>
+        <input type="password" name="password" id="password" required>
+        <button type="submit">Login</button>
+    </form>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>

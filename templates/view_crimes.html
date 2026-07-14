@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reported Crimes</title>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+    <hr>
+    <h2>All Reported Crimes</h2>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Location</th>
+            <th>Crime Type</th>
+            <th>Description</th>
+        </tr>
+        {% for crime in crimes %}
+        <tr>
+            <td>{{ crime['id'] }}</td>
+            <td>{{ crime['location'] }}</td>
+            <td>{{ crime['crime_type'] }}</td>
+            <td>{{ crime['description'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

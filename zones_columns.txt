@@ -1,0 +1,12 @@
+ Columns in 'zones' table:
+(0, 'id', 'INTEGER', 0, None, 1)
+(1, 'location', 'TEXT', 1, None, 0)
+(2, 'severity', 'TEXT', 1, None, 0)
+(3, 'crimes', 'TEXT', 1, None, 0)
+(4, 'latitude', 'REAL', 0, None, 0)
+(5, 'longitude', 'REAL', 0, None, 0)
+(6, 'zone', 'TEXT', 0, None, 0)
+(7, 'min_lat', 'REAL', 0, None, 0)
+(8, 'max_lat', 'REAL', 0, None, 0)
+(9, 'min_lng', 'REAL', 0, None, 0)
+(10, 'max_lng', 'REAL', 0, None, 0)

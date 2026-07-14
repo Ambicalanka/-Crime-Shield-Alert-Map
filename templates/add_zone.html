@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add/Update Zone</title>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('report_crime') }}">Report Crime</a> |
+        <a href="{{ url_for('route_safety') }}">Route Safety</a> |
+        <a href="{{ url_for('alert') }}">Live Zone Checker</a> |
+        <a href="{{ url_for('prediction_charts') }}">Crime Predictions</a> |
+        <a href="{{ url_for('map_view') }}">Zone Map</a>
+    </nav>
+    <hr>
+    <h2>Add or Update Zone</h2>
+    <form method="POST" action="/add_zone">
+        <label for="zone">Zone Name:</label>
+        <input type="text" id="zone" name="zone" required><br><br>
+        <label for="severity">Severity Level (Red/Yellow/Green):</label>
+        <input type="text" id="severity" name="severity" required><br><br>
+        <label for="latitude">Latitude:</label>
+        <input type="text" id="latitude" name="latitude" required><br><br>
+        <label for="longitude">Longitude:</label>
+        <input type="text" id="longitude" name="longitude" required><br><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

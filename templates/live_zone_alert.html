@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Safe Route Checker (Open Map)</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <style>
+    #map { height: 90vh; width: 100%; }
+    .legend {
+      background: white;
+      padding: 10px;
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      font-size: 14px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h2>Safe Route Checker (Leaflet Map)</h2>
+  <form onsubmit="route(event)">
+    <label>Source: <input id="source" placeholder="e.g. Odisha" required></label>
+    <label>Destination: <input id="destination" placeholder="e.g. Kerala" required></label>
+    <button type="submit">Check Route</button>
+  </form>
+
+  <div id="map"></div>
+  <div class="legend">
+    <b>Zone Severity:</b><br>
+    <span style="color:red">●</span> Red Zone<br>
+    <span style="color:yellow">●</span> Yellow Zone<br>
+    <span style="color:green">●</span> Green Zone<br>
+  </div>
+
+  <!-- Leaflet & Routing -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+
+ <script>
+  const map = L.map('map').setView([20.5937, 78.9629], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+  const zones = [
+  { name: "Telangana", lat: 17.9784, lng: 79.5941, severity: "red" },
+  { name: "Tamil Nadu", lat: 11.1271, lng: 78.6569, severity: "green" },
+  { name: "Andhra Pradesh", lat: 15.9129, lng: 79.74, severity: "yellow" },
+  { name: "Kerala", lat: 10.8505, lng: 76.2711, severity: "green" },
+  { name: "Karnataka", lat: 15.3173, lng: 75.7139, severity: "yellow" },
+  { name: "Maharashtra", lat: 19.7515, lng: 75.7139, severity: "red" },
+  { name: "Odisha", lat: 20.9517, lng: 85.0985, severity: "yellow" },
+  { name: "Chhattisgarh", lat: 21.2787, lng: 81.8661, severity: "red" },
+  { name: "Uttar Pradesh", lat: 26.8467, lng: 80.9462, severity: "red" },
+  { name: "West Bengal", lat: 22.9868, lng: 87.8550, severity: "yellow" },
+  { name: "Gujarat", lat: 22.2587, lng: 71.1924, severity: "green" },
+  { name: "Punjab", lat: 31.1471, lng: 75.3412, severity: "green" }
+];
+
+
+  zones.forEach(zone => {
+    L.circle([zone.lat, zone.lng], {
+      color: zone.severity === 'red' ? 'red' : zone.severity === 'yellow' ? 'yellow' : 'green',
+      fillColor: zone.severity === 'red' ? 'red' : zone.severity === 'yellow' ? 'yellow' : 'green',
+      fillOpacity: 0.3,
+      radius: 50000
+    }).addTo(map).bindPopup(zone.name + " - " + zone.severity.toUpperCase() + " zone");
+  });
+
+  // Add the loadPoliceStations function here
+  async function loadPoliceStations() {
+    const overpassUrl = 'https://overpass-api.de/api/interpreter';
+    const query = `
+      [out:json];
+      node["amenity"="police"](15.0,75.0,20.0,80.0);
+      out;
+    `;
+
+    try {
+      const response = await fetch(overpassUrl, {
+        method: 'POST',
+        body: query,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+
+      const data = await response.json();
+      data.elements.forEach(el => {
+        if (el.lat && el.lon) {
+          L.marker([el.lat, el.lon])
+            .addTo(map)
+            .bindPopup(`<b>Police Station</b><br>${el.tags.name || 'Unnamed'}`);
+        }
+      });
+    } catch (error) {
+      console.error('Error loading police stations:', error);
+    }
+  }
+
+  loadPoliceStations(); // Call the function to load police stations
+
+  let control = null;
+
+  async function route(e) {
+    e.preventDefault();
+    const src = document.getElementById('source').value;
+    const dst = document.getElementById('destination').value;
+
+    const srcCoord = await geocode(src);
+    const dstCoord = await geocode(dst);
+
+    if (control) map.removeControl(control);
+
+    control = L.Routing.control({
+      waypoints: [L.latLng(srcCoord), L.latLng(dstCoord)],
+      routeWhileDragging: false,
+      router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+    }).addTo(map);
+  }
+
+  async function geocode(place) {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(place)}&format=json&limit=1`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+  }
+</script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+</body>
+</html>
+<!-- This HTML template provides a live zone alert map using Leaflet and OpenStreetMap. It allows users to input source and destination locations, displays zones with different severities, and calculates routes using the OSRM routing service. -->

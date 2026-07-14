@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Zone Checker</title>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+  <style>
+    #map { height: 600px; width: 70%; float: left; }
+    #red-zone-sidebar { width: 30%; padding: 10px; overflow-y: auto; border-left: 2px solid #ccc; float: right; }
+    select, button { margin: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Live Zone Checker</h2>
+
+  <label for="source">Source State:</label>
+  <select name="source" id="source" required>
+    <option value="">Select Source State</option>
+    {% for state in states %}
+        <option value="{{ state }}">{{ state }}</option>
+    {% endfor %}
+  </select>
+
+  <br><br>
+
+  <label for="destination">Destination State:</label>
+  <select name="destination" id="destination" required>
+    <option value="">Select Destination State</option>
+    {% for state in states %}
+        <option value="{{ state }}">{{ state }}</option>
+    {% endfor %}
+  </select>
+
+  <button onclick="drawRoute()">Check Route</button>
+
+  <div id="safety-alert" style="display: none;">
+    <h3 style="color:red;">⚠️ Safety Alert!</h3>
+    <ul id="precautions">
+      <!-- JS will populate this -->
+    </ul>
+    <p><strong>Emergency Contacts:</strong></p>
+    <p id="emergency-contact-text" style="color: darkred;"></p>
+  </div>
+
+  <div style="display: flex;">
+    <div id="map"></div>
+    <div id="red-zone-sidebar">
+      <h3>⚠️ Red Zones on Route</h3>
+      <div id="red-zone-list"></div>
+      <h3>🟢 Alternate Safe Areas Nearby</h3>
+      <ul id="safe-zone-list" style="list-style-type: none; padding-left: 0;"></ul>
+    </div>
+  </div>
+  <script>
+    let map, directionsService, directionsRenderer;
+    const safetyTips = [
+      "Avoid traveling alone at night.",
+      "Stay in well-lit and populated areas.",
+      "Inform someone about your travel plans.",
+      "Keep emergency contact numbers handy.",
+      "Use verified transportation services."
+    ];
+    const emergencyContacts = {
+      "Delhi": "Police: 100, Women Helpline: 1091, Ambulance: 102",
+      "Maharashtra": "Police: 100, Disaster Helpline: 1077",
+      "Tamil Nadu": "Police: 100, Ambulance: 108",
+      "Telangana": "Police: 100, SHE Teams: 181",
+      "Karnataka": "Police: 100, Women Helpline: 1091",
+      // Add more states as needed
+    };
+    const zoneSeverities = {
+      "Delhi": "red",
+      "Hyderabad": "yellow",
+      "Mumbai": "red",
+      "Bangalore": "green",
+      // Add more states as needed
+    };
+    const allZones = all_zones | tojson;
+    let redZonesOnRoute = [];
+
+    function haversineDistance(lat1, lng1, lat2, lng2) {
+      const toRad = deg => deg * Math.PI / 180;
+      const R = 6371; // Radius of earth in km
+
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLng / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      return R * c;
+    }
+
+    function getNearbySafeZones(redZoneLat, redZoneLng, radiusKm = 30) {
+      return allZones.filter(zone => 
+          zone.severity === 'green' &&
+          haversineDistance(redZoneLat, redZoneLng, zone.lat, zone.lng) <= radiusKm
+      );
+    }
+
+    function addRedZoneToSidebar(zoneName, latLng) {
+      redZonesOnRoute.push({ zone: zoneName, latLng });
+
+      const redZoneList = document.getElementById("red-zone-list");
+      const zoneHtml = `
+        <div style="margin-bottom: 10px; border-bottom: 1px solid #ddd; cursor: pointer;" onclick="zoomToRedZone(${latLng.lat()}, ${latLng.lng()})">
+          <b>🔴 ${zoneName}</b><br>
+          Location: (${latLng.lat().toFixed(2)}, ${latLng.lng().toFixed(2)})<br>
+          <small>🛡️ Avoid late-night travel. Prefer crowded roads. Carry emergency contacts.</small>
+        </div>
+      `;
+      redZoneList.innerHTML += zoneHtml;
+    }
+
+    function zoomToRedZone(lat, lng) {
+      map.setCenter({ lat, lng });
+      map.setZoom(13);
+    }
+
+    function speakSafetyAlert(tips, contact) {
+      const msg = new SpeechSynthesisUtterance();
+      msg.text = `Alert! You are passing through a red zone. 
+        Please follow these safety tips: ${tips.join(". ")}. 
+        Emergency contact: ${contact}`;
+      msg.lang = "en-IN";
+      msg.pitch = 1;
+      msg.rate = 1;
+      window.speechSynthesis.speak(msg);
+    }
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 5,
+        center: { lat: 22.9734, lng: 78.6569 } // India center
+      });
+      directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
+    }
+
+    async function drawRoute() {
+      const source = document.getElementById('source').value;
+      const destination = document.getElementById('destination').value;
+
+      if (!source || !destination) {
+        alert("Please select both states.");
+        return;
+      }
+
+      const request = {
+        origin: source + ", India",
+        destination: destination + ", India",
+        travelMode: 'DRIVING'
+      };
+
+      directionsService.route(request, async function (result, status) {
+        if (status == 'OK') {
+          directionsRenderer.setDirections(result);
+
+          const route = result.routes[0].legs[0];
+          const statesToCheck = [source, destination];
+
+          let redZoneDetected = false;
+          const tips = document.getElementById("precautions");
+          tips.innerHTML = '';
+          document.getElementById("red-zone-list").innerHTML = '';
+          document.getElementById("safe-zone-list").innerHTML = '';
+
+          // Fetch zone severity from zoneSeverities object
+          for (const state of statesToCheck) {
+            const severity = zoneSeverities[state] || "green"; // default to green if not found
+
+            let color;
+            if (severity === 'red') {
+              color = '#FF0000';
+              redZoneDetected = true;
+
+              // Add marker and zoom into it
+              const geocoder = new google.maps.Geocoder();
+              geocoder.geocode({ address: state + ", India" }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                  const redZoneLatLng = results[0].geometry.location;
+                  const marker = new google.maps.Marker({
+                    position: redZoneLatLng,
+                    map: map,
+                    icon: {
+                      path: google.maps.SymbolPath.CIRCLE,
+                      scale: 8,
+                      fillColor: "#FF0000",
+                      fillOpacity: 0.8,
+                      strokeColor: "#000",
+                      strokeWeight: 1
+                    },
+                    title: state
+                  });
+
+                  // Info popup
+                  const infoWindow = new google.maps.InfoWindow({
+                    content: `<b>Red Zone Alert:</b> ${state} is marked as HIGH RISK.`,
+                  });
+
+                  infoWindow.open(map, marker);
+
+                  // Auto-zoom to red zone
+                  map.setCenter(redZoneLatLng);
+                  map.setZoom(12); // You can adjust zoom level
+
+                  // Add to sidebar
+                  addRedZoneToSidebar(state, redZoneLatLng);
+
+                  // Get nearby safe zones
+                  const nearbySafeZones = getNearbySafeZones(redZoneLatLng.lat(), redZoneLatLng.lng());
+                  nearbySafeZones.forEach(safeZone => {
+                    const marker = new google.maps.Marker({
+                      position: { lat: safeZone.lat, lng: safeZone.lng },
+                      map: map,
+                      icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+                      title: `Safe Zone: ${safeZone.name}`
+                    });
+
+                    const safeZoneList = document.getElementById("safe-zone-list");
+                    const item = document.createElement("li");
+                    item.innerHTML = `🟢 <b>${safeZone.name}</b> - ${(haversineDistance(redZoneLatLng.lat(), redZoneLatLng.lng(), safeZone.lat, safeZone.lng)).toFixed(1)} km away`;
+                    safeZoneList.appendChild(item);
+                  });
+                }
+              });
+            }
+            else if (severity === 'yellow') color = '#FFFF00';
+            else color = '#00FF00';
+
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: state + ", India" }, (results, status) => {
+              if (status === "OK" && results[0]) {
+                const loc = results[0].geometry.location;
+                new google.maps.Circle({
+                  strokeColor: color,
+                  strokeOpacity: 0.8,
+                  strokeWeight: 2,
+                  fillColor: color,
+                  fillOpacity: 0.3,
+                  map,
+                  center: loc,
+                  radius: 80000
+                });
+              }
+            });
+          }
+
+          // Show safety tips if red zone found
+          const alertBox = document.getElementById("safety-alert");
+          if (redZoneDetected) {
+            alertBox.style.display = "block";
+            safetyTips.forEach(tip => {
+              const li = document.createElement("li");
+              li.textContent = tip;
+              tips.appendChild(li);
+            });
+            const contactText = emergencyContacts[destination] || "General Emergency: 100 / 112";
+            document.getElementById("emergency-contact-text").textContent = contactText;
+            speakSafetyAlert(safetyTips, contactText);
+          } else {
+            alertBox.style.display = "none";
+          }
+
+          document.getElementById("red-zone-list").scrollTop = 0;
+        } else {
+          alert("Could not draw route.");
+        }
+      });
+    }
+
+    window.onload = initMap;
+  </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('report_crime') }}">Report Crime</a> |
+        <a href="{{ url_for('route_safety') }}">Route Safety</a> |
+        <a href="{{ url_for('alert') }}">Live Zone Checker</a> |
+        <a href="{{ url_for('prediction_charts') }}">Crime Predictions</a> |
+        <a href="{{ url_for('map_view') }}">Zone Map</a>
+    </nav>
+    <hr>
+    <h1>Admin Dashboard</h1>
+    <ul>
+        <li><a href="/add_zone">Add/Update Zone</a></li>
+        <li><a href="/add_crime">Add Crime Report</a></li>
+        <li><a href="/logout">Logout</a></li>
+        <li><a href="{{ url_for('view_crimes') }}">View Reported Crimes</a></li>
+    </ul>
+</body>
+</html>

@@ -1,0 +1,21 @@
+Year,State,City,Zone,Crime_Type,Count
+2021,Delhi,New Delhi,Zone A,Theft,150
+2021,Maharashtra,Mumbai,Zone B,Assault,200
+2021,Karnataka,Bangalore,Zone C,Robbery,100
+2021,Tamil Nadu,Chennai,Zone D,Theft,120
+2021,Uttar Pradesh,Kanpur,Zone E,Assault,180
+2022,Delhi,New Delhi,Zone A,Theft,160
+2022,Maharashtra,Mumbai,Zone B,Assault,210
+2022,Karnataka,Bangalore,Zone C,Robbery,110
+2022,Tamil Nadu,Chennai,Zone D,Theft,130
+2022,Uttar Pradesh,Kanpur,Zone E,Assault,190
+2023,Delhi,New Delhi,Zone A,Theft,170
+2023,Maharashtra,Mumbai,Zone B,Assault,220
+2023,Karnataka,Bangalore,Zone C,Robbery,120
+2023,Tamil Nadu,Chennai,Zone D,Theft,140
+2023,Uttar Pradesh,Kanpur,Zone E,Assault,200
+2024,Delhi,New Delhi,Zone A,Theft,180
+2024,Maharashtra,Mumbai,Zone B,Assault,230
+2024,Karnataka,Bangalore,Zone C,Robbery,130
+2024,Tamil Nadu,Chennai,Zone D,Theft,150
+2024,Uttar Pradesh,Kanpur,Zone E,Assault,210
